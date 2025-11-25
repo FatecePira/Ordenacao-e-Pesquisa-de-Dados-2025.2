@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Merge Sort e Quick Sort</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(120deg, rgba(186,150,255,0.4) 40%, rgba(0,117,255,0.6) 60%),
+                url('https://cdn-imgix.headout.com/media/images/00a7311ea0fc68d87e5ddd8938ce3949-eiffel%20tower.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.93;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #ffffff;
+            font-size: 32px;
+            text-shadow: 0 0 10px rgba(0,0,0,0.6);
+        }
+
+        .main-wrapper {
+            display: flex;
+            gap: 5cm;
+            margin-top: 40px;
+        }
+
+        .table-box {
+            background: rgba(255,255,255,0.8);
+            padding: 25px;
+            border-radius: 10px;
+            width: 380px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #222;
+        }
+
+        .case-title {
+            font-size: 18px;
+            font-weight: bold;
+            font-style: italic;
+            margin-top: 20px;
+            text-decoration: underline;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
+            background: #0056b3;
+        }
+
+        .log {
+            background: #f2f2f2;
+            width: 100%;
+            height: 280px;
+            overflow-y: scroll;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 15px;
+            text-align: left;
+            font-family: monospace;
+        }
+
+        .counter {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<h1>Atd2 Ordenação e Pesquisa de Dados - Carlos Daniel</h1>
+
+<div class="main-wrapper">
+
+    <!-- MERGE SORT -->
+    <div class="table-box">
+        <h2>Merge Sort (Crescente)</h2>
+
+        <div class="case-title">Melhor caso:</div>
+        <p>[1, 10, 13, 14, 29, 37]</p>
+
+        <div class="case-title">Caso médio:</div>
+        <p>[29, 10, 14, 37, 13, 1]</p>
+
+        <div class="case-title">Pior caso:</div>
+        <p>[37, 29, 14, 13, 10, 1]</p>
+
+        <button id="btnMergeMelhor" onclick="executarMerge('melhor')">Executar Melhor Caso</button>
+        <button id="btnMergeMedio" onclick="executarMerge('medio')">Executar Caso Médio</button>
+        <button id="btnMergePior" onclick="executarMerge('pior')">Executar Pior Caso</button>
+
+        <div id="logMerge" class="log"></div>
+        <div id="countMerge" class="counter">Contador De Ações: 0</div>
+        <div id="clicksMerge" class="counter">3 Cliques Para Bloqueio de Tela: 0</div>
+    </div>
+
+
+    <!-- QUICK SORT -->
+    <div class="table-box">
+        <h2>Quick Sort (Decrescente)</h2>
+
+        <div class="case-title">Melhor caso:</div>
+        <p>[1, 10, 13, 14, 29, 37]</p>
+
+        <div class="case-title">Caso médio:</div>
+        <p>[29, 10, 14, 37, 13, 1]</p>
+
+        <div class="case-title">Pior caso:</div>
+        <p>[37, 29, 14, 13, 10, 1]</p>
+
+        <button id="btnQuickMelhor" onclick="executarQuick('melhor')">Executar Melhor Caso</button>
+        <button id="btnQuickMedio" onclick="executarQuick('medio')">Executar Caso Médio</button>
+        <button id="btnQuickPior" onclick="executarQuick('pior')">Executar Pior Caso</button>
+
+        <div id="logQuick" class="log"></div>
+        <div id="countQuick" class="counter">Contador De Ações: 0</div>
+        <div id="clicksQuick" class="counter">3 Cliques Para Bloqueio de Tela: 0</div>
+    </div>
+
+</div>
+
+
+<script>
+
+    
+    let mergeRodando = false;
+    let quickRodando = false;
+
+    let contMerge = 0;
+    let contQuick = 0;
+
+    let globalClicks = 0;
+
+    let clicksMerge = 0;
+    let clicksQuick = 0;
+
+    const maxGlobalClicks = 20;
+
+
+    function registrarCliqueGlobal() {
+        globalClicks++;
+        if (globalClicks >= maxGlobalClicks) {
+            alert("Limite de cliques atingido. O site será recarregado.");
+            location.reload();
+        }
+    }
+
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function nomeDoCaso(tipo) {
+        return tipo === "melhor" ? "Melhor Caso" :
+               tipo === "medio"  ? "Caso Médio"  :
+                                    "Pior Caso";
+    }
+
+    function logMerge(msg) {
+        let box = document.getElementById("logMerge");
+        box.innerHTML += msg + "<br>";
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function logQuick(msg) {
+        let box = document.getElementById("logQuick");
+        box.innerHTML += msg + "<br>";
+        box.scrollTop = box.scrollHeight;
+    }
+
+
+    function controleClique(tabela) {
+        if (tabela === "merge") {
+            clicksMerge++;
+            document.getElementById("clicksMerge").textContent = "Cliques: " + clicksMerge;
+
+            if (clicksMerge >= 3) {
+                bloquearBotoesMerge();
+                setTimeout(liberarBotoesMerge, 1000);
+                clicksMerge = 0;
+            }
+        }
+
+        if (tabela === "quick") {
+            clicksQuick++;
+            document.getElementById("clicksQuick").textContent = "Cliques: " + clicksQuick;
+
+            if (clicksQuick >= 3) {
+                bloquearBotoesQuick();
+                setTimeout(liberarBotoesQuick, 1000);
+                clicksQuick = 0;
+            }
+        }
+
+        registrarCliqueGlobal();
+    }
+
+
+    function bloquearBotoesMerge() {
+        document.querySelectorAll("#btnMergeMelhor, #btnMergeMedio, #btnMergePior")
+            .forEach(btn => btn.disabled = true);
+    }
+    function liberarBotoesMerge() {
+        document.querySelectorAll("#btnMergeMelhor, #btnMergeMedio, #btnMergePior")
+            .forEach(btn => btn.disabled = false);
+    }
+
+
+    function bloquearBotoesQuick() {
+        document.querySelectorAll("#btnQuickMelhor, #btnQuickMedio, #btnQuickPior")
+            .forEach(btn => btn.disabled = true);
+    }
+    function liberarBotoesQuick() {
+        document.querySelectorAll("#btnQuickMelhor, #btnQuickMedio, #btnQuickPior")
+            .forEach(btn => btn.disabled = false);
+    }
+
+
+
+    // -----------------------------------------
+    // MERGE SORT
+    // -----------------------------------------
+
+    async function executarMerge(tipo) {
+
+        controleClique("merge");
+
+        if (mergeRodando) {
+            logMerge("<strong>⚠ Processo já em execução...</strong>");
+            return;
+        }
+
+        mergeRodando = true;
+
+        document.getElementById("logMerge").innerHTML = "";
+        contMerge = 0;
+        document.getElementById("countMerge").textContent = "Ações: 0";
+
+        const vetores = {
+            melhor: [1, 10, 13, 14, 29, 37],
+            medio:  [29, 10, 14, 37, 13, 1],
+            pior:   [37, 29, 14, 13, 10, 1]
+        };
+
+        let arr = [...vetores[tipo]];
+
+        logMerge(`<strong style="font-size: 15px;">Iniciando Merge Sort - ${nomeDoCaso(tipo)}</strong>`);
+        logMerge(`<strong>Vetor inicial:</strong> [${arr}]`);
+
+        let final = await mergeSortAnimado(arr);
+
+        logMerge(`<strong>Resultado final:</strong> [${final}]`);
+
+        mergeRodando = false;
+    }
+
+
+    async function mergeSortAnimado(arr) {
+        if (arr.length <= 1) return arr;
+
+        const meio = Math.floor(arr.length / 2);
+        const esquerda = arr.slice(0, meio);
+        const direita = arr.slice(meio);
+
+        logMerge(`Dividindo: [${arr}]`);
+        contMerge++;
+        document.getElementById("countMerge").textContent = "Ações: " + contMerge;
+        await delay(500);
+
+        const e = await mergeSortAnimado(esquerda);
+        const d = await mergeSortAnimado(direita);
+
+        return await mergeAnimado(e, d);
+    }
+
+
+    async function mergeAnimado(e, d) {
+        let result = [];
+        let i = 0, j = 0;
+
+        while (i < e.length && j < d.length) {
+            logMerge(`Comparando ${e[i]} com ${d[j]}`);
+            contMerge++;
+            document.getElementById("countMerge").textContent = "Ações: " + contMerge;
+            await delay(500);
+
+            if (e[i] < d[j]) {
+                logMerge(`Inserindo ${e[i]}`);
+                result.push(e[i]);
+                i++;
+            } else {
+                logMerge(`Inserindo ${d[j]}`);
+                result.push(d[j]);
+                j++;
+            }
+        }
+
+        while (i < e.length) {
+            logMerge(`Inserindo restante ${e[i]}`);
+            result.push(e[i]);
+            i++;
+            contMerge++;
+            document.getElementById("countMerge").textContent = "Ações: " + contMerge;
+            await delay(500);
+        }
+
+        while (j < d.length) {
+            logMerge(`Inserindo restante ${d[j]}`);
+            result.push(d[j]);
+            j++;
+            contMerge++;
+            document.getElementById("countMerge").textContent = "Ações: " + contMerge;
+            await delay(500);
+        }
+
+        logMerge(`<strong>Resultado parcial:</strong> [${result}]`);
+        return result;
+    }
+
+
+
+    // -----------------------------------------
+    // QUICK SORT
+    // -----------------------------------------
+
+    async function executarQuick(tipo) {
+
+        controleClique("quick");
+
+        if (quickRodando) {
+            logQuick("<strong>⚠ Processo já em execução...</strong>");
+            return;
+        }
+
+        quickRodando = true;
+
+        document.getElementById("logQuick").innerHTML = "";
+        contQuick = 0;
+        document.getElementById("countQuick").textContent = "Ações: 0";
+
+        const vetores = {
+            melhor: [1, 10, 13, 14, 29, 37],
+            medio:  [29, 10, 14, 37, 13, 1],
+            pior:   [37, 29, 14, 13, 10, 1]
+        };
+
+        let arr = [...vetores[tipo]];
+
+        logQuick(`<strong style="font-size: 15px;">Iniciando Quick Sort - ${nomeDoCaso(tipo)}</strong>`);
+        logQuick(`<strong>Vetor inicial:</strong> [${arr}]`);
+
+        await quickSortAnimado(arr, 0, arr.length - 1);
+
+        logQuick(`<strong>Resultado final:</strong> [${arr}]`);
+
+        quickRodando = false;
+    }
+
+
+    async function quickSortAnimado(arr, inicio, fim) {
+        if (inicio < fim) {
+            let p = await particionarAnimado(arr, inicio, fim);
+            await quickSortAnimado(arr, inicio, p - 1);
+            await quickSortAnimado(arr, p + 1, fim);
+        }
+    }
+
+
+    async function particionarAnimado(arr, inicio, fim) {
+        let pivo = arr[fim];
+        let i = inicio - 1;
+
+        logQuick(`Pivô escolhido = ${pivo}`);
+        contQuick++;
+        document.getElementById("countQuick").textContent = "Ações: " + contQuick;
+        await delay(500);
+
+        for (let j = inicio; j < fim; j++) {
+            logQuick(`Comparando ${arr[j]} com pivô ${pivo}`);
+            contQuick++;
+            document.getElementById("countQuick").textContent = "Ações: " + contQuick;
+            await delay(500);
+
+            if (arr[j] >= pivo) {
+                i++;
+                logQuick(`Trocando ${arr[i]} ↔ ${arr[j]}`);
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+                logQuick(`Estado atual: [${arr}]`);
+                contQuick++;
+                document.getElementById("countQuick").textContent = "Ações: " + contQuick;
+                await delay(500);
+            }
+        }
+
+        logQuick(`Colocando pivô no lugar -> trocando ${arr[fim]} ↔ ${arr[i+1]}`);
+        [arr[i+1], arr[fim]] = [arr[fim], arr[i+1]];
+        logQuick(`Estado após pivô: [${arr}]`);
+        contQuick++;
+        document.getElementById("countQuick").textContent = "Ações: " + contQuick;
+        await delay(500);
+
+        return i + 1;
+    }
+
+</script>
+
+</body>
+</html>
